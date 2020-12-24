@@ -8,8 +8,8 @@ public class MysqlCon {
 
 	private String dbName="midterm";
 	private String dbuserName="admin";
-	private String dbPass="Tella123";
-	private String hostName="database-2.cqg0qhmwjedz.us-east-2.rds.amazonaws.com";
+	private String dbPass="Akshit12";
+	private String hostName="database-1.cqg0qhmwjedz.us-east-2.rds.amazonaws.com";
 	private String dbport="3306";
 	
 	private  String jdbcurl="jdbc:mysql://"+hostName+":"+dbport+"/"+dbName+"?user="+dbuserName+"&password="+dbPass;

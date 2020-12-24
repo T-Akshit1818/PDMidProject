@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.mad322.MysqlCon;
+import com.mad322.Employee1;
 
 
 
@@ -46,7 +47,7 @@ public class AwsClass {
 	@GET
 	@Path("/getem")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getOffice() {
+	public Response getEmp() {
 		MysqlCon connection = new MysqlCon();
 
 		con = connection.getConnection();
@@ -54,7 +55,7 @@ public class AwsClass {
 		try {
 			stmt = con.createStatement();
 
-			rs = stmt.executeQuery("Select first_name from employee");
+			rs = stmt.executeQuery("Select * from employee");
 
 			while (rs.next()) {
 				childObj = new JSONObject();
@@ -67,7 +68,7 @@ public class AwsClass {
 				childObj.accumulate("TITLE", rs.getString("TITLE"));
 				childObj.accumulate("ASSIGNED_BRANCH_ID", rs.getInt("ASSIGNED_BRANCH_ID"));
 				childObj.accumulate("DEPT_ID", rs.getInt("DEPT_ID"));
-				childObj.accumulate("SUPERIOR_ID", rs.getInt("SUPERIOR_ID"));
+				childObj.accumulate("SUPERIOR_EMP_ID", rs.getInt("SUPERIOR_EMP_ID"));
 
 				jsonArray.put(childObj);
 			}
@@ -88,7 +89,118 @@ public class AwsClass {
 		return Response.status(200).entity(mainObj.toString()).build();
 
 	}
+    //update employee 1st query
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+    @Path("/updateEmp/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateEmployee(@PathParam("id")int id,Employee1 employee)
+	{
+		MysqlCon connection= new MysqlCon();
+		con= connection.getConnection();
+		Status status =Status.OK;
+		try {
+			String query ="UPDATE `midterm`.`employee` SET `FIRST_NAME` = ? WHERE `EMP_ID` = "+id;
+			//`EMP_ID` = ?,`END_DATE` = ?,
+			//,`LAST_NAME` = ?,`START_DATE` = ?,`TITLE` = ?,`ASSIGNED_BRANCH_ID` = ?,`DEPT_ID` = ?,`SUPERIOR_EMP_ID` = ?
+			
+			String query1="UPDATE `midterm`.`employee` SET `EMP_ID` = ?, `END_DATE` = ?, `FIRST_NAME` = ?, `LAST_NAME` = ?,`START_DATE` = ?,`TITLE` = ?,`ASSIGNED_BRANCH_ID` = ?,`DEPT_ID` = ?,`SUPERIOR_EMP_ID` = ? WHERE `EMP_ID` = "+id;
 
+			preparedStatement = con.prepareStatement(query);
+			
+			//preparedStatement.setInt(1,employee.geteMP_ID());
+			//preparedStatement.setString(2, employee.geteND_DATE());		
+			preparedStatement.setString(1, employee.getfIRST_NAME());
+			//preparedStatement.setString(4, employee.getlAST_NAME());
+			//preparedStatement.setString(5, employee.getsTART_DATE());
+			//preparedStatement.setString(6, employee.gettITLE());
+			//preparedStatement.setInt(7,employee.getaSSIGNED_BRANCH_ID());
+			//preparedStatement.setInt(8, employee.getdEPT_ID());
+			//preparedStatement.setInt(9,employee.getsUPERIOR_EMP_ID());
+			
+			
+
+			int rowCount = preparedStatement.executeUpdate();
+			
+			if (rowCount > 0) 
+			{
+			status=Status.OK;
+			mainObj.accumulate("status", status);
+			mainObj.accumulate("Message","Data successfully updated !");
+			
+			}
+			else
+			{
+				status=Status.NOT_MODIFIED;
+				mainObj.accumulate("status", status);
+				mainObj.accumulate("Message","Something Went Wrong");
+							
+			}
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+			status=status.NOT_MODIFIED;
+			mainObj.accumulate("status", status);
+			mainObj.accumulate("Message","Something Went Wrong");
+		}
+		
+		return Response.status(status).entity(mainObj.toString()).build();
+	}
+	@POST
+	@Path("/createEmp")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response createEmp(Employee1 employee) {
+		MysqlCon connection = new MysqlCon();
+
+		con = connection.getConnection();
+
+		try {
+
+			// '' Single quotes
+			// ` Grave accent
+
+			String query = "INSERT INTO `midterm`.`employee`(`EMP_ID`,`END_DATE`,`FIRST_NAME`,`LAST_NAME`,`START_DATE`,`TITLE`,`ASSIGNED_BRANCH_ID`,`DEPT_ID`,`SUPERIOR_EMP_ID`)"
+					+ "VALUES(?,?,?,?,?,?,?,?,?)";
+
+			preparedStatement = con.prepareStatement(query);
+			preparedStatement.setInt(1,employee.geteMP_ID());
+			preparedStatement.setString(2, employee.geteND_DATE());		
+			preparedStatement.setString(3, employee.getfIRST_NAME());
+			preparedStatement.setString(4, employee.getlAST_NAME());
+			preparedStatement.setString(5, employee.getsTART_DATE());
+			preparedStatement.setString(6, employee.gettITLE());
+			preparedStatement.setInt(7,employee.getaSSIGNED_BRANCH_ID());
+			preparedStatement.setInt(8, employee.getdEPT_ID());
+			preparedStatement.setInt(9,employee.getsUPERIOR_EMP_ID());
+						int rowCount = preparedStatement.executeUpdate();
+
+			if (rowCount > 0) {
+				System.out.println("Record inserted Successfully! : " + rowCount);
+
+				mainObj.accumulate("Status", 201);
+				mainObj.accumulate("Message", "Record Successfully added!");
+			} else {
+				mainObj.accumulate("Status", 500);
+				mainObj.accumulate("Message", "Something went wrong!");
+			}
+
+		} catch (SQLException e) {
+
+			mainObj.accumulate("Status", 500);
+			mainObj.accumulate("Message", e.getMessage());
+		} finally {
+			try {
+				con.close();
+				preparedStatement.close();
+			} catch (SQLException e) {
+				System.out.println("Finally SQL Exception : " + e.getMessage());
+			}
+		}
+
+		return Response.status(201).entity(mainObj.toString()).build();
+
+	}
 
 
 	
